@@ -1,0 +1,29 @@
+version: 0.2
+env:
+  variables:
+    TAG: "latest"
+    IMAGE_NAME: "sample-python-ap"
+  parameter-store:
+    DOCKER_REG_URL: /app/docker-creds/reg_url
+    DOCKER_USERNAME: /app/docker-creds/username	
+    DOCKER_PASSWORD: /app/docker-creds/password	
+phases:
+  install:
+    commands:
+      - echo "Entered Installed Phase"
+    runtime-versions:
+      python: 3.11
+  pre_build:
+    commands:
+      - echo "Entered Pre-Build Phase"
+      - echo "Docker Login"
+      - echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+  build:
+    commands:
+      - echo "Building Image"
+      - docker build -t ${DOCKER_REG_URL}/${DOCKER_USERNAME}/${IMAGE_NAME}:${TAG} .
+
+  post_build:
+    commands:
+      - docker push ${DOCKER_REG_URL}/${DOCKER_USERNAME}/${IMAGE_NAME}:${TAG}
+      - echo "Image Pushed Successfully !!!!!"
